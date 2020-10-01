@@ -1,0 +1,31 @@
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: ray-singleuser-profile
+  labels:
+    jupyterhub: singleuser-profiles
+data:
+  jupyterhub-singleuser-profiles.yaml: |
+    profiles:
+    - name: Ray Notebook
+      images:
+      - 'ray-notebook:latest'
+      env:
+        - name: ZZZZZZZ
+          value: 'Z'
+      services:
+        ray-cluster:
+          resources:
+          - name: ray-cluster-template
+            path: rayHeadServiceTemplate
+          - name: ray-cluster-template
+            path: rayHeadDeploymentTemplate
+          - name: ray-cluster-template
+            path: rayWorkerDeploymentTemplate
+          configuration:
+            ray_image: 'quay.io/erikerlandson/ray:latest'
+            ray_workers: '3'
+            head_memory_request: '512Mi'
+            worker_memory_request: '512Mi'
+          return:
+            RAY_CLUSTER: 'metadata.name'

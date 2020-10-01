@@ -1,0 +1,19 @@
+﻿kind: ImageStream
+apiVersion: image.openshift.io/v1
+metadata:
+  name: ray-notebook
+  labels:
+    opendatahub.io/notebook-image: 'true'
+spec:
+  lookupPolicy:
+    local: true
+  tags:
+    - name: latest
+      annotations:
+        openshift.io/imported-from: quay.io/thoth-station/s2i-minimal-notebook
+      from:
+        kind: DockerImage
+        name: 'quay.io/thoth-station/s2i-minimal-notebook:v0.0.4'
+      importPolicy: {}
+      referencePolicy:
+        type: Source
