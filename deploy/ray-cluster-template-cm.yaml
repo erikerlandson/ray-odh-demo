@@ -10,6 +10,8 @@ data:
       name: "ray-head-{{ user }}"
     spec:
       ports:
+        - name: dashboard
+          port: 8265
         - name: redis-primary
           port: 6379
           targetPort: 6379
@@ -62,8 +64,9 @@ data:
               imagePullPolicy: Always
               command: [ "/bin/bash", "-c", "--" ]
               args: 
-                - "ray start --head --node-ip-address=$MY_POD_IP --port=6379 --redis-shard-ports=6380,6381 --num-cpus=$MY_CPU_REQUEST --object-manager-port=12345 --node-manager-port=12346 --block"
+                - "ray --logging-level=info start --head --node-ip-address=$MY_POD_IP --port=6379 --redis-shard-ports=6380,6381 --num-cpus=$MY_CPU_REQUEST --object-manager-port=12345 --node-manager-port=12346 --log-style=record --log-color=false --block"
               ports:
+                - containerPort: 8265 # Dashboard.
                 - containerPort: 6379 # Redis port.
                 - containerPort: 6380 # Redis port.
                 - containerPort: 6381 # Redis port.
@@ -122,8 +125,11 @@ data:
             imagePullPolicy: Always
             command: ["/bin/bash", "-c", "--"]
             args:
-              - "ray start --node-ip-address=$MY_POD_IP --num-cpus=$MY_CPU_REQUEST --address=ray-head-{{ user }}:6379 --object-manager-port=12345 --node-manager-port=12346 --block"
+              - "ray --logging-level=info start --node-ip-address=$MY_POD_IP --num-cpus=$MY_CPU_REQUEST --address=ray-head-{{ user }}:6379 --object-manager-port=12345 --node-manager-port=12346 --log-style=record --log-color=false --block"
             ports:
+              - containerPort: 6379 # Redis port.
+              - containerPort: 6380 # Redis port.
+              - containerPort: 6381 # Redis port.
               - containerPort: 12345 # Ray internal communication.
               - containerPort: 12346 # Ray internal communication.
             volumeMounts:
@@ -134,9 +140,6 @@ data:
                 valueFrom:
                   fieldRef:
                     fieldPath: status.podIP
-              # This is used in the ray start command so that Ray can spawn the
-              # correct number of processes. Omitting this may lead to degraded
-              # performance.
               - name: MY_CPU_REQUEST
                 valueFrom:
                   resourceFieldRef:
