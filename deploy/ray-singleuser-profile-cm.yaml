@@ -17,6 +17,8 @@ data:
         ray-cluster:
           resources:
           - name: ray-cluster-template
+            path: notebookPodServiceTemplate
+          - name: ray-cluster-template
             path: rayHeadServiceTemplate
           - name: ray-cluster-template
             path: rayHeadDeploymentTemplate

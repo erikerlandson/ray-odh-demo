@@ -3,6 +3,18 @@ apiVersion: v1
 metadata:
   name: ray-cluster-template
 data:
+  notebookPodServiceTemplate: |
+    apiVersion: v1
+    kind: Service
+    metadata:
+      labels:
+      name: "jupyterhub-nb-{{ user }}"
+    spec:
+      clusterIP: None
+      selector:
+        jupyterhub.opendatahub.io/user: "{{ user }}"
+      sessionAffinity: None
+      type: ClusterIP
   rayHeadServiceTemplate: |
     apiVersion: v1
     kind: Service
