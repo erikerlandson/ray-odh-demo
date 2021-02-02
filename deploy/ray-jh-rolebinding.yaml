@@ -9,4 +9,4 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: jupyterhub-hub
-  namespace: <your namespace here>
+  namespace: demo
