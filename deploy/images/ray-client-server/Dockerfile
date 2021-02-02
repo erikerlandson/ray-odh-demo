@@ -1,4 +1,4 @@
-FROM docker.io/rayproject/ray:nightly
+FROM docker.io/rayproject/ray:nightly-py36
 
 # ray dumps stuff into /root/conda as ROOT
 # because of course it does
