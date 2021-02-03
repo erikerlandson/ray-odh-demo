@@ -12,4 +12,5 @@ ray --logging-level=info \
     --redis-shard-ports=6380,6381 \
     --object-manager-port=12345 --node-manager-port=12346 \
     --log-style=record --log-color=false \
+    --no-redirect-output --no-redirect-worker-output \
     --block
