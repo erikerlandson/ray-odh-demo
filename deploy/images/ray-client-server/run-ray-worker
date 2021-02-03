@@ -11,5 +11,4 @@ ray --logging-level=info \
     --address=${MY_HEAD_NODE}:6379 \
     --object-manager-port=12345 --node-manager-port=12346 \
     --log-style=record --log-color=false \
-    --no-redirect-output \
     --block
