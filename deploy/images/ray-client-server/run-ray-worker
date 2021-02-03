@@ -1,0 +1,14 @@
+#!/bin/bash
+
+echo
+echo "starting ray worker..."
+echo
+
+ray --logging-level=info \
+    start \
+    --node-ip-address=$MY_POD_IP \
+    --num-cpus=$MY_CPU_REQUEST \
+    --address=${MY_HEAD_NODE}:6379 \
+    --object-manager-port=12345 --node-manager-port=12346 \
+    --log-style=record --log-color=false \
+    --block
