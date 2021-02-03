@@ -1,7 +1,5 @@
 FROM quay.io/erikerlandson/ray:nightly-py36-20210202
 
-# ray dumps stuff into /root/conda as ROOT
-# because of course it does
-#RUN chmod -R go+rwx /root
-
-COPY run-with-server /opt/ray/bin/
+# running them from these scripts causes the log output
+# to display properly in the pod console
+COPY run-ray-head run-ray-worker /opt/ray/bin/
