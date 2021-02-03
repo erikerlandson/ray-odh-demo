@@ -6,8 +6,8 @@ echo
 
 ray --logging-level=info \
     start --head \
-    --node-ip-address=$MY_POD_IP --port=6379 \
-    --num-cpus=$MY_CPU_REQUEST \
+    --node-ip-address=$RAY_POD_IP --port=6379 \
+    --num-cpus=$RAY_CPU_REQUEST \
     --ray-client-server-port=50051 \
     --redis-shard-ports=6380,6381 \
     --object-manager-port=12345 --node-manager-port=12346 \

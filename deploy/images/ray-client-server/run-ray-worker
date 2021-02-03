@@ -6,9 +6,9 @@ echo
 
 ray --logging-level=info \
     start \
-    --node-ip-address=$MY_POD_IP \
-    --num-cpus=$MY_CPU_REQUEST \
-    --address=${MY_HEAD_NODE}:6379 \
+    --node-ip-address=$RAY_POD_IP \
+    --num-cpus=$RAY_CPU_REQUEST \
+    --address=${RAY_HEAD_NODE}:6379 \
     --object-manager-port=12345 --node-manager-port=12346 \
     --log-style=record --log-color=false \
     --block
