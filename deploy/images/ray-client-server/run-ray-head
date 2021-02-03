@@ -4,11 +4,12 @@ echo
 echo "starting ray head..."
 echo
 
-ray --logging-level=info start --head --node-ip-address=$MY_POD_IP --port=6379 --redis-shard-ports=6380,6381 --num-cpus=$MY_CPU_REQUEST --object-manager-port=12345 --node-manager-port=12346 --log-style=record --log-color=false
-
-echo
-echo "starting ray client server..."
-echo
-
-#python3 -m ray.util.client.server --host $MY_POD_IP --port 50051
-python3 -m ray.util.client.server
+ray --logging-level=info \
+    start --head \
+    --node-ip-address=$MY_POD_IP --port=6379 \
+    --num-cpus=$MY_CPU_REQUEST \
+    --ray-client-server-port=50051 \
+    --redis-shard-ports=6380,6381 \
+    --object-manager-port=12345 --node-manager-port=12346 \
+    --log-style=record --log-color=false \
+    --block
