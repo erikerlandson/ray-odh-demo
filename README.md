@@ -6,7 +6,7 @@ Prototype an integration of ray with Open Data Hub on OpenShift, using a singleu
 
 Prerequisites - This demo assumes:
 
-1. You have a project namespace in OpenShift to use for your demo.
+1. You have a project namespace in OpenShift to use for your demo, and that you have admin privileges on the cluster to install the Open Data Hub operator and add rolebindings.
 1. You have installed the Open Data Hub community operator from the Operator Catalog.
 1. You have created a deployment of the ODH operator into your demo namespace. The only ODH component necessary for this demo is JupyterHub, but others may be installed if desired.
 
