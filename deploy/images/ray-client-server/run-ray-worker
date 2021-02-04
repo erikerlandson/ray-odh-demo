@@ -4,6 +4,9 @@ echo
 echo "starting ray worker..."
 echo
 
+# ray-project operator sets RAY_HEAD_IP, but not RAY_HEAD_NODE
+export RAY_HEAD_NODE=${RAY_HEAD_NODE:-$RAY_HEAD_IP}
+
 ray --logging-level=info \
     start \
     --node-ip-address=$RAY_POD_IP \
