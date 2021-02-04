@@ -11,19 +11,19 @@ data:
       images:
       - 'ray-notebook:latest'
       env:
-        - name: ZZZZZZZ
-          value: 'Z'
+        # this is a workaround that may not be neccesary in the future
+        - name: RAY_CLIENT_MODE
+          value: '1'
       services:
         ray-cluster:
           resources:
           - name: ray-cluster-template
-            path: notebookPodServiceTemplate
-          - name: ray-cluster-template
             path: rayHeadServiceTemplate
           - name: ray-cluster-template
-            path: rayHeadDeploymentTemplate
-          - name: ray-cluster-template
             path: rayWorkerDeploymentTemplate
+          # do head last so RAY_CLUSTER is populated correctly below
+          - name: ray-cluster-template
+            path: rayHeadDeploymentTemplate
           configuration:
             ray_image: 'quay.io/erikerlandson/ray-client-server:latest'
             # number of workers currently disabled due to bug in JH launcher
@@ -31,4 +31,5 @@ data:
             head_memory_request: '512Mi'
             worker_memory_request: '512Mi'
           return:
+            # This gets name of last item listed in 'resources' above
             RAY_CLUSTER: 'metadata.name'

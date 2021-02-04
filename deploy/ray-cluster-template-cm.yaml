@@ -3,18 +3,6 @@ apiVersion: v1
 metadata:
   name: ray-cluster-template
 data:
-  notebookPodServiceTemplate: |
-    apiVersion: v1
-    kind: Service
-    metadata:
-      labels:
-      name: "jupyterhub-nb-{{ user }}"
-    spec:
-      clusterIP: None
-      selector:
-        jupyterhub.opendatahub.io/user: "{{ user }}"
-      sessionAffinity: None
-      type: ClusterIP
   rayHeadServiceTemplate: |
     apiVersion: v1
     kind: Service
@@ -22,6 +10,7 @@ data:
       name: "ray-head-{{ user }}"
     spec:
       ports:
+        # open question: are all these strictly necessary to define in this service?
         - name: client-server
           port: 50051
           targetPort: 50051
@@ -44,7 +33,7 @@ data:
           port: 12346
           targetPort: 12346
       selector:
-        component: "ray-head-{{ user }}"
+        ray-cluster-deployment: "ray-head-{{ user }}"
   rayHeadDeploymentTemplate: |
     apiVersion: apps/v1
     kind: Deployment
@@ -55,17 +44,12 @@ data:
       replicas: 1
       selector:
         matchLabels:
-          component: "ray-head-{{ user }}"
-          type: ray
+          ray-cluster-deployment: "ray-head-{{ user }}"
       template:
         metadata:
           labels:
-            component: "ray-head-{{ user }}"
-            type: ray
+            ray-cluster-deployment: "ray-head-{{ user }}"
         spec:
-          # If the head node goes down, the entire cluster (including all worker
-          # nodes) will go down as well. If you want Kubernetes to bring up a new
-          # head node in this case, set this to "Always," else set it to "Never."
           restartPolicy: Always
           # This volume allocates shared memory for Ray to use for its plasma
           # object store. If you do not provide this, Ray will fall back to
@@ -78,18 +62,7 @@ data:
             - name: "ray-head-{{ user }}"
               image: "{{ ray_image }}"
               imagePullPolicy: Always
-              command: [ "/bin/bash", "-c", "--" ]
-              args:
-                # - "/opt/ray/bin/run-with-server"
-                - "ray --logging-level=info start --head --node-ip-address=$MY_POD_IP --port=6379 --redis-shard-ports=6380,6381 --num-cpus=$MY_CPU_REQUEST --object-manager-port=12345 --node-manager-port=12346 --log-style=record --log-color=false --ray-client-server-port 50051 --block"
-              ports:
-                - containerPort: 50051 # client server
-                - containerPort: 8265 # Dashboard.
-                - containerPort: 6379 # Redis port.
-                - containerPort: 6380 # Redis port.
-                - containerPort: 6381 # Redis port.
-                - containerPort: 12345 # Ray internal communication.
-                - containerPort: 12346 # Ray internal communication.
+              command: [ '/opt/ray/bin/run-ray-head' ]
               # This volume allocates shared memory for Ray to use for its plasma
               # object store. If you do not provide this, Ray will fall back to
               # /tmp which cause slowdowns if is not a shared memory volume.
@@ -97,14 +70,14 @@ data:
                 - mountPath: /dev/shm
                   name: dshm
               env:
-                - name: MY_POD_IP
+                - name: RAY_POD_IP
                   valueFrom:
                     fieldRef:
                       fieldPath: status.podIP
                 # This is used in the ray start command so that Ray can spawn the
                 # correct number of processes. Omitting this may lead to degraded
                 # performance.
-                - name: MY_CPU_REQUEST
+                - name: RAY_CPU_REQUEST
                   valueFrom:
                     resourceFieldRef:
                       resource: requests.cpu
@@ -127,13 +100,11 @@ data:
       replicas: 3
       selector:
         matchLabels:
-          component: "ray-worker-{{ user }}"
-          type: ray
+          ray-cluster-deployment: "ray-worker-{{ user }}"
       template:
         metadata:
           labels:
-            component: "ray-worker-{{ user }}"
-            type: ray
+            ray-cluster-deployment: "ray-worker-{{ user }}"
         spec:
           restartPolicy: Always
           volumes:
@@ -144,24 +115,18 @@ data:
           - name: "ray-worker-{{ user }}"
             image: "{{ ray_image }}"
             imagePullPolicy: Always
-            command: ["/bin/bash", "-c", "--"]
-            args:
-              - "ray --logging-level=info start --node-ip-address=$MY_POD_IP --num-cpus=$MY_CPU_REQUEST --address=ray-head-{{ user }}:6379 --object-manager-port=12345 --node-manager-port=12346 --log-style=record --log-color=false --block"
-            ports:
-              - containerPort: 6379 # Redis port.
-              - containerPort: 6380 # Redis port.
-              - containerPort: 6381 # Redis port.
-              - containerPort: 12345 # Ray internal communication.
-              - containerPort: 12346 # Ray internal communication.
+            command: [ '/opt/ray/bin/run-ray-worker' ]
             volumeMounts:
               - mountPath: /dev/shm
                 name: dshm
             env:
-              - name: MY_POD_IP
+              - name: RAY_HEAD_NODE
+                value: 'ray-head-{{ user }}'
+              - name: RAY_POD_IP
                 valueFrom:
                   fieldRef:
                     fieldPath: status.podIP
-              - name: MY_CPU_REQUEST
+              - name: RAY_CPU_REQUEST
                 valueFrom:
                   resourceFieldRef:
                     resource: requests.cpu
