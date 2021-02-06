@@ -35,7 +35,7 @@ spec:
   containers:
   - name: ray
     imagePullPolicy: Always
-    image: 'quay.io/erikerlandson/ray:nightly-py36-20210202'
+    image: 'quay.io/erikerlandson/ray:nightly-py36-20210206'
     command: ["ray-operator"]
     env:
     - name: RAY_OPERATOR_POD_NAMESPACE
