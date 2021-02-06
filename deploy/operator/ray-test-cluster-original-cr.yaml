@@ -36,7 +36,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: rayproject/ray:nightly
+          image: quay.io/erikerlandson/ray:nightly-py36-20210206
           # Do not change this command - it keeps the pod alive until it is
           # explicitly killed.
           command: ["/bin/bash", "-c", "--"]
@@ -74,8 +74,8 @@ spec:
     # User-specified custom resources for use by Ray 
     rayResources: {"Custom1": 1, "is_spot": 1}
     # Optional commands to run before starting the Ray runtime.
-    setupCommands: 
-      - pip install numpy # Example
+    #setupCommands: 
+    #  - pip install numpy # Example
     podConfig:
       apiVersion: v1
       kind: Pod
@@ -91,7 +91,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: rayproject/ray:nightly
+          image: quay.io/erikerlandson/ray:nightly-py36-20210206
           command: ["/bin/bash", "-c", "--"]
           args: ["trap : TERM INT; sleep infinity & wait;"]
           ports:
