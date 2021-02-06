@@ -1,6 +1,11 @@
 #!/bin/bash
 
 echo
+echo "initializing ray environment..."
+cd /opt/ray
+. $(pipenv --venv)/bin/activate
+
+echo
 echo "starting ray worker..."
 echo
 

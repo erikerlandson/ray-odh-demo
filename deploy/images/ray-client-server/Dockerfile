@@ -1,4 +1,4 @@
-FROM quay.io/erikerlandson/ray:nightly-py36-20210202
+FROM quay.io/erikerlandson/ray-ubi:latest
 
 # running them from these scripts causes the log output
 # to display properly in the pod console
