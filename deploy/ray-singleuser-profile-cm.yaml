@@ -25,11 +25,11 @@ data:
           - name: ray-cluster-template
             path: rayHeadDeploymentTemplate
           configuration:
-            ray_image: 'quay.io/erikerlandson/ray-client-server:latest'
+            ray_image: 'quay.io/erikerlandson/ray-client-server:ray-ubi'
             # number of workers currently disabled due to bug in JH launcher
             # ray_workers: '3'
-            head_memory_request: '512Mi'
-            worker_memory_request: '512Mi'
+            head_memory_request: '1024Mi'
+            worker_memory_request: '1024Mi'
           return:
             # This gets name of last item listed in 'resources' above
             RAY_CLUSTER: 'metadata.name'

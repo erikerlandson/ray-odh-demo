@@ -14,4 +14,4 @@ subjects:
 - kind: ServiceAccount
   name: jupyterhub-hub
   # edit namespace for your project before creating:
-  namespace: ray-odh-demo
+  namespace: demo
