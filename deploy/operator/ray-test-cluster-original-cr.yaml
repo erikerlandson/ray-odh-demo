@@ -4,7 +4,7 @@ metadata:
   name: example-cluster2
 spec:
   # The maximum number of workers nodes to launch in addition to the head node.
-  maxWorkers: 3
+  maxWorkers: 10
   # The autoscaler will scale up the cluster faster with higher upscaling speed.
   # E.g., if the task requires adding more nodes then autoscaler will gradually
   # scale up the cluster in chunks of upscaling_speed*currently_running_nodes.
@@ -36,7 +36,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: quay.io/erikerlandson/ray:nightly-py36-20210206
+          image: quay.io/erikerlandson/ray:nightly-py36-20210210
           # Do not change this command - it keeps the pod alive until it is
           # explicitly killed.
           command: ["/bin/bash", "-c", "--"]
@@ -70,9 +70,9 @@ spec:
     # Minimum number of Ray workers of this Pod type.
     minWorkers: 1
     # Maximum number of Ray workers of this Pod type. Takes precedence over minWorkers.
-    maxWorkers: 3
+    maxWorkers: 10
     # User-specified custom resources for use by Ray 
-    rayResources: {"Custom1": 1, "is_spot": 1}
+    #rayResources: {"Custom1": 1, "is_spot": 1}
     # Optional commands to run before starting the Ray runtime.
     #setupCommands: 
     #  - pip install numpy # Example
@@ -91,7 +91,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: quay.io/erikerlandson/ray:nightly-py36-20210206
+          image: quay.io/erikerlandson/ray:nightly-py36-20210210
           command: ["/bin/bash", "-c", "--"]
           args: ["trap : TERM INT; sleep infinity & wait;"]
           ports:

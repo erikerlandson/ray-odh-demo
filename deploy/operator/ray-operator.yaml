@@ -11,7 +11,7 @@ metadata:
   name: ray-operator-role
 rules:
 - apiGroups: ["", "cluster.ray.io"]
-  resources: ["rayclusters", "rayclusters/finalizers", "rayclusters/status", "pods", "pods/exec"]
+  resources: ["rayclusters", "rayclusters/finalizers", "rayclusters/status", "pods", "pods/exec", "services"]
   verbs: ["get", "watch", "list", "create", "delete", "patch", "update"]
 ---
 kind: RoleBinding
@@ -35,7 +35,7 @@ spec:
   containers:
   - name: ray
     imagePullPolicy: Always
-    image: 'quay.io/erikerlandson/ray:nightly-py36-20210206'
+    image: 'quay.io/erikerlandson/ray:nightly-py36-20210210'
     command: ["ray-operator"]
     env:
     - name: RAY_OPERATOR_POD_NAMESPACE
