@@ -7,11 +7,12 @@ metadata:
   # create the ray cluster Deployment objects defined in the singleuser profile.
   name: ray-jh-rolebinding
 roleRef:
+  kind: Role
+  # we bind the launcher to same role used by the ray operator
+  name: ray-operator-role
   apiGroup: rbac.authorization.k8s.io
-  kind: ClusterRole
-  name: admin
 subjects:
 - kind: ServiceAccount
   name: jupyterhub-hub
   # edit namespace for your project before creating:
-  namespace: ray-odh-demo
+  namespace: demo
