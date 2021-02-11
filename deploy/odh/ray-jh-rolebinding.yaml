@@ -6,13 +6,11 @@ metadata:
   # Adding this rolebinding in your project will allow the launcher to
   # create the ray cluster Deployment objects defined in the singleuser profile.
   name: ray-jh-rolebinding
+subjects:
+- kind: ServiceAccount
+  name: jupyterhub-hub
 roleRef:
   kind: Role
   # we bind the launcher to same role used by the ray operator
   name: ray-operator-role
   apiGroup: rbac.authorization.k8s.io
-subjects:
-- kind: ServiceAccount
-  name: jupyterhub-hub
-  # edit namespace for your project before creating:
-  namespace: demo
