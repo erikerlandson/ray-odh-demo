@@ -3,136 +3,101 @@ apiVersion: v1
 metadata:
   name: ray-cluster-template
 data:
-  rayHeadServiceTemplate: |
-    apiVersion: v1
-    kind: Service
+  rayClusterResourceTemplate: |
+    kind: RayCluster
+    apiVersion: cluster.ray.io/v1
     metadata:
-      name: "ray-head-{{ user }}"
+      name: 'ray-cluster-{{ user }}'
+      labels:
+        # allows me to return name of service that Ray operator creates
+        odh-ray-cluster-service: 'ray-cluster-{{ user }}-ray-head'
     spec:
-      ports:
-        # open question: are all these strictly necessary to define in this service?
-        - name: client-server
-          port: 50051
-          targetPort: 50051
-        - name: dashboard
-          port: 8265
-          targetPort: 8265
-        - name: redis-primary
-          port: 6379
-          targetPort: 6379
-        - name: redis-shard-0
-          port: 6380
-          targetPort: 6380
-        - name: redis-shard-1
-          port: 6381
-          targetPort: 6381
-        - name: object-manager
-          port: 12345
-          targetPort: 12345
-        - name: node-manager
-          port: 12346
-          targetPort: 12346
-      selector:
-        ray-cluster-deployment: "ray-head-{{ user }}"
-  rayHeadDeploymentTemplate: |
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: "ray-head-{{ user }}"
-    spec:
-      # Do not change this - Ray currently only supports one head node per cluster.
-      replicas: 1
-      selector:
-        matchLabels:
-          ray-cluster-deployment: "ray-head-{{ user }}"
-      template:
-        metadata:
-          labels:
-            ray-cluster-deployment: "ray-head-{{ user }}"
-        spec:
-          restartPolicy: Always
-          # This volume allocates shared memory for Ray to use for its plasma
-          # object store. If you do not provide this, Ray will fall back to
-          # /tmp which cause slowdowns if is not a shared memory volume.
-          volumes:
-          - name: dshm
-            emptyDir:
-              medium: Memory
-          containers:
-            - name: "ray-head-{{ user }}"
-              image: "{{ ray_image }}"
+      maxWorkers: 5
+      # The autoscaler will scale up the cluster faster with higher upscaling speed.
+      # E.g., if the task requires adding more nodes then autoscaler will gradually
+      # scale up the cluster in chunks of upscaling_speed*currently_running_nodes.
+      # This number should be > 0.
+      upscalingSpeed: 1.0
+      # If a node is idle for this many minutes, it will be removed.
+      idleTimeoutMinutes: 5
+      # Specify the pod type for the ray head node (as configured below).
+      headPodType: head-node
+      # Specify the allowed pod types for this ray cluster and the resources they provide.
+      podTypes:
+      - name: head-node
+        podConfig:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            generateName: 'ray-cluster-{{ user }}-head-'
+          spec:
+            restartPolicy: Never
+            volumes:
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            containers:
+            - name: ray-node
               imagePullPolicy: Always
-              command: [ '/opt/ray/bin/run-ray-head' ]
-              # This volume allocates shared memory for Ray to use for its plasma
-              # object store. If you do not provide this, Ray will fall back to
-              # /tmp which cause slowdowns if is not a shared memory volume.
+              image: '{{ ray_image }}'
+              # Do not change this command - it keeps the pod alive until it is explicitly killed.
+              command: ["/bin/bash", "-c", "--"]
+              args: ['trap : TERM INT; sleep infinity & wait;']
+              # This volume allocates shared memory for Ray to use for plasma
               volumeMounts:
-                - mountPath: /dev/shm
-                  name: dshm
-              env:
-                - name: RAY_POD_IP
-                  valueFrom:
-                    fieldRef:
-                      fieldPath: status.podIP
-                # This is used in the ray start command so that Ray can spawn the
-                # correct number of processes. Omitting this may lead to degraded
-                # performance.
-                - name: RAY_CPU_REQUEST
-                  valueFrom:
-                    resourceFieldRef:
-                      resource: requests.cpu
-              resources:
-                requests:
-                  cpu: 1
-                  memory: "{{ head_memory_request }}"
-                limits:
-                  cpu: 1
-  rayWorkerDeploymentTemplate: |
-    apiVersion: apps/v1
-    kind: Deployment
-    metadata:
-      name: "ray-worker-{{ user }}"
-    spec:
-      # Change this to scale the number of worker nodes started in the Ray cluster.
-      # non-string template parameters are currently not supported due to a bug
-      # in the ODH JH launcher, so I'm just hard coding for now.
-      # Also to-do: integrate the ray autoscaler
-      replicas: 3
-      selector:
-        matchLabels:
-          ray-cluster-deployment: "ray-worker-{{ user }}"
-      template:
-        metadata:
-          labels:
-            ray-cluster-deployment: "ray-worker-{{ user }}"
-        spec:
-          restartPolicy: Always
-          volumes:
-          - name: dshm
-            emptyDir:
-              medium: Memory
-          containers:
-          - name: "ray-worker-{{ user }}"
-            image: "{{ ray_image }}"
-            imagePullPolicy: Always
-            command: [ '/opt/ray/bin/run-ray-worker' ]
-            volumeMounts:
               - mountPath: /dev/shm
                 name: dshm
-            env:
-              - name: RAY_HEAD_NODE
-                value: 'ray-head-{{ user }}'
-              - name: RAY_POD_IP
-                valueFrom:
-                  fieldRef:
-                    fieldPath: status.podIP
-              - name: RAY_CPU_REQUEST
-                valueFrom:
-                  resourceFieldRef:
-                    resource: requests.cpu
-            resources:
-              requests:
-                cpu: 1
-                memory: "{{ worker_memory_request }}"
-              limits:
-                cpu: 1
+              resources:
+                requests:
+                  cpu: '{{ cpu_request }}'
+                  memory: '{{ memory_request}}'
+                limits:
+                  cpu: '{{ cpu_limit }}'
+                  # The maximum memory that this pod is allowed to use. The
+                  # limit will be detected by ray and split to use 10% for
+                  # redis, 30% for the shared memory object store, and the
+                  # rest for application memory. If this limit is not set and
+                  # the object store size is not set manually, ray will
+                  # allocate a very large object store in each pod that may
+                  # cause problems for other pods.
+                  memory: '{{ memory_limit }}'
+      - name: worker-nodes
+        minWorkers: 0
+        maxWorkers: 5
+        podConfig:
+          apiVersion: v1
+          kind: Pod
+          metadata:
+            # Automatically generates a name for the pod with this prefix.
+            generateName: 'ray-cluster-{{ user }}-worker-'
+          spec:
+            restartPolicy: Never
+            volumes:
+            - name: dshm
+              emptyDir:
+                medium: Memory
+            containers:
+            - name: ray-node
+              imagePullPolicy: Always
+              image: '{{ ray_image }}'
+              command: ["/bin/bash", "-c", "--"]
+              args: ["trap : TERM INT; sleep infinity & wait;"]
+              volumeMounts:
+              - mountPath: /dev/shm
+                name: dshm
+              resources:
+                requests:
+                  cpu: '{{ cpu_request }}'
+                  memory: '{{ memory_request}}'
+                limits:
+                  cpu: '{{ cpu_limit }}'
+                  memory: '{{ memory_limit }}'
+      # Commands to start Ray on the head node. You don't need to change this.
+      # Note dashboard-host is set to 0.0.0.0 so that Kubernetes can port forward.
+      headStartRayCommands:
+          - ray stop
+          - ulimit -n 65536; ray start --head --no-monitor --port=6379 --object-manager-port=8076 --dashboard-host 0.0.0.0
+      # Commands to start Ray on worker nodes. You don't need to change this.
+      workerStartRayCommands:
+          - ray stop
+          - ulimit -n 65536; ray start --address=$RAY_HEAD_IP:6379 --object-manager-port=8076
