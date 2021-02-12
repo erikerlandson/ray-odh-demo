@@ -18,18 +18,15 @@ data:
         ray-cluster:
           resources:
           - name: ray-cluster-template
-            path: rayHeadServiceTemplate
-          - name: ray-cluster-template
-            path: rayWorkerDeploymentTemplate
-          # do head last so RAY_CLUSTER is populated correctly below
-          - name: ray-cluster-template
-            path: rayHeadDeploymentTemplate
+            path: rayClusterResourceTemplate
           configuration:
-            ray_image: 'quay.io/erikerlandson/ray-client-server:latest'
+            ray_image: 'quay.io/erikerlandson/ray:nightly-py36-20210210'
             # number of workers currently disabled due to bug in JH launcher
-            # ray_workers: '3'
-            head_memory_request: '512Mi'
-            worker_memory_request: '512Mi'
+            #max_workers: 5
+            memory_request: '1024Mi'
+            memory_limit: '1024Mi'
+            cpu_request: '1'
+            cpu_limit: '1'
           return:
-            # This gets name of last item listed in 'resources' above
-            RAY_CLUSTER: 'metadata.name'
+            # This path applies to the last item in 'resources' list above
+            RAY_CLUSTER: 'metadata.labels[odh-ray-cluster-service]'
