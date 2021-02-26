@@ -27,7 +27,7 @@ This demo makes use of a role-binding to the role `ray-operator-role` defined fo
 
 1. Run `oc apply -f` on all the `.yaml` files in the `deploy/odh` directory.
 1. You will need to restart the `jupyterhub-xxxx` pod so that it reads the new profile you just installed. Simply deleting this pod will cause it to be restarted automatically.
-1. Log into the ODH JupyterHub launcher. You should see a new notebook image option `ray-notebook:latest`: choose this.
+1. Log into the ODH JupyterHub launcher. You should see a new notebook image option `ray-minimal-notebook:demo`: choose this.
 1. In the environment variable section, add `JUPYTER_PRELOAD_REPOS` and set to `https://github.com/erikerlandson/ray-odh-demo.git`
 1. Launch your JupyterHub environment. As part of the startup process, the ODH JupyterHub launcher should also start up a Ray cluster.
 1. In Jupyter, navigate to directory `ray-odh-demo.git/source` and open the demo notebook.
