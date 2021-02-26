@@ -9,7 +9,7 @@ data:
     profiles:
     - name: Ray Notebook
       images:
-      - 'ray-notebook:latest'
+      - 'ray-minimal-notebook:demo'
       env:
         # this is a workaround that may not be neccesary in the future
         - name: RAY_CLIENT_MODE
@@ -20,7 +20,7 @@ data:
           - name: ray-cluster-template
             path: rayClusterResourceTemplate
           configuration:
-            ray_image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-864956f8'
+            ray_image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-43570553'
             # number of workers currently disabled due to bug in JH launcher
             #max_workers: 5
             memory_request: '1024Mi'
