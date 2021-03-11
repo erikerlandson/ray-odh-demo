@@ -1,10 +1,12 @@
-apiVersion: cluster.ray.io/v1
 kind: RayCluster
+apiVersion: cluster.ray.io/v1
 metadata:
-  name: example-cluster2
+  name: 'ray-cluster-smoketest'
+  labels:
+    # allows me to return name of service that Ray operator creates
+    odh-ray-cluster-service: 'ray-cluster-smoketest-ray-head'
 spec:
-  # The maximum number of workers nodes to launch in addition to the head node.
-  maxWorkers: 10
+  maxWorkers: 5
   # The autoscaler will scale up the cluster faster with higher upscaling speed.
   # E.g., if the task requires adding more nodes then autoscaler will gradually
   # scale up the cluster in chunks of upscaling_speed*currently_running_nodes.
@@ -21,7 +23,7 @@ spec:
       apiVersion: v1
       kind: Pod
       metadata:
-        generateName: example-cluster2-ray-head-
+        generateName: 'ray-cluster-smoketest-head-'
       spec:
         restartPolicy: Never
         volumes:
@@ -31,20 +33,25 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: quay.io/erikerlandson/ray:nightly-py36-20210210
+          image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-43570553'
           # Do not change this command - it keeps the pod alive until it is explicitly killed.
           command: ["/bin/bash", "-c", "--"]
           args: ['trap : TERM INT; sleep infinity & wait;']
           # This volume allocates shared memory for Ray to use for plasma
+          env:
+          # defining HOME is part of a workaround for:
+          # https://github.com/ray-project/ray/issues/14155
+          - name: HOME
+            value: '/opt'
           volumeMounts:
           - mountPath: /dev/shm
             name: dshm
           resources:
             requests:
-              cpu: 1000m
-              memory: 1024Mi
+              cpu: '1'
+              memory: '1024Mi'
             limits:
-              cpu: 1000m
+              cpu: '1'
               # The maximum memory that this pod is allowed to use. The
               # limit will be detected by ray and split to use 10% for
               # redis, 30% for the shared memory object store, and the
@@ -52,16 +59,16 @@ spec:
               # the object store size is not set manually, ray will
               # allocate a very large object store in each pod that may
               # cause problems for other pods.
-              memory: 1024Mi
+              memory: '1024Mi'
   - name: worker-nodes
-    minWorkers: 1
-    maxWorkers: 10
+    minWorkers: 0
+    maxWorkers: 5
     podConfig:
       apiVersion: v1
       kind: Pod
       metadata:
         # Automatically generates a name for the pod with this prefix.
-        generateName: example-cluster2-ray-worker-
+        generateName: 'ray-cluster-smoketest-worker-'
       spec:
         restartPolicy: Never
         volumes:
@@ -71,25 +78,28 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: quay.io/erikerlandson/ray:nightly-py36-20210210
+          image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-43570553'
           command: ["/bin/bash", "-c", "--"]
           args: ["trap : TERM INT; sleep infinity & wait;"]
+          env:
+          - name: HOME
+            value: '/opt'
           volumeMounts:
           - mountPath: /dev/shm
             name: dshm
           resources:
             requests:
-              cpu: 1000m
-              memory: 1024Mi
+              cpu: '1'
+              memory: '1024Mi'
             limits:
-              cpu: 1000m
-              memory: 1024Mi
+              cpu: '1'
+              memory: '1024Mi'
   # Commands to start Ray on the head node. You don't need to change this.
   # Note dashboard-host is set to 0.0.0.0 so that Kubernetes can port forward.
   headStartRayCommands:
-      - ray stop
-      - ulimit -n 65536; ray start --head --no-monitor --port=6379 --object-manager-port=8076 --dashboard-host 0.0.0.0
+      - cd /opt/ray; pipenv run ray stop
+      - ulimit -n 65536; cd /opt/ray; pipenv run ray start --head --no-monitor --port=6379 --object-manager-port=8076 --dashboard-host 0.0.0.0
   # Commands to start Ray on worker nodes. You don't need to change this.
   workerStartRayCommands:
-      - ray stop
-      - ulimit -n 65536; ray start --address=$RAY_HEAD_IP:6379 --object-manager-port=8076
+      - cd /opt/ray; pipenv run ray stop
+      - ulimit -n 65536; cd /opt/ray; pipenv run ray start --address=$RAY_HEAD_IP:6379 --object-manager-port=8076
