@@ -1,7 +1,7 @@
 ﻿kind: ImageStream
 apiVersion: image.openshift.io/v1
 metadata:
-  name: ray-minimal-notebook
+  name: ray-ml-notebook
   labels:
     opendatahub.io/notebook-image: 'true'
 spec:
@@ -11,4 +11,4 @@ spec:
     - name: demo
       from:
         kind: DockerImage
-        name: 'quay.io/erikerlandson/ray-minimal-notebook:py-3.6-ray-43570553'
+        name: 'quay.io/erikerlandson/ray-ml-notebook:py-3.6-ray-ea6bdfb9'
