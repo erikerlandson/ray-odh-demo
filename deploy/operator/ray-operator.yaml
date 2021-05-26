@@ -35,7 +35,7 @@ spec:
   containers:
   - name: ray
     imagePullPolicy: Always
-    image: 'quay.io/erikerlandson/ray-operator-ubi:py-3.6-ray-43570553'
+    image: 'quay.io/erikerlandson/ray-operator-ubi:py-3.6-ray-ea6bdfb9'
     command: [ '/bin/bash', '-c', '--', 'cd /opt/ray && pipenv run ray-operator' ]
     env:
     - name: RAY_CONFIG_DIR
