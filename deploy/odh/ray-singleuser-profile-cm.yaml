@@ -14,11 +14,15 @@ data:
         # this is a workaround that may not be neccesary in the future
         - name: RAY_CLIENT_MODE
           value: '1'
+        - name: RAY_DASH_URL
+          value: 'http://$(RAY_DASH_HOST)'
       services:
         ray-cluster:
           resources:
           - name: ray-cluster-template
             path: rayClusterResourceTemplate
+          - name: ray-cluster-template
+            path: rayDashboardRouteTemplate
           configuration:
             ray_image: 'quay.io/erikerlandson/ray-ml-ubi:py-3.6-ray-ea6bdfb9'
             # number of workers currently disabled due to bug in JH launcher
@@ -28,5 +32,6 @@ data:
             cpu_request: '1'
             cpu_limit: '1'
           return:
-            # This path applies to the last item in 'resources' list above
+            # Paths are applied to the last item in 'resources' list above
             RAY_CLUSTER: 'metadata.labels[odh-ray-cluster-service]'
+            RAY_DASH_HOST: 'spec.host'
