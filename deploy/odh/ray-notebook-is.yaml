@@ -11,4 +11,4 @@ spec:
     - name: demo
       from:
         kind: DockerImage
-        name: 'quay.io/erikerlandson/ray-ml-notebook:py-3.6-ray-ea6bdfb9'
+        name: 'quay.io/erikerlandson/ray-ml-notebook:py-3.8-ray-1.4.0'

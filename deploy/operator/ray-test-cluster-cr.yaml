@@ -33,7 +33,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-ea6bdfb9'
+          image: 'quay.io/erikerlandson/ray-ubi:py-3.8-ray-1.4.0'
           # Do not change this command - it keeps the pod alive until it is explicitly killed.
           command: ["/bin/bash", "-c", "--"]
           args: ['trap : TERM INT; sleep infinity & wait;']
@@ -78,7 +78,7 @@ spec:
         containers:
         - name: ray-node
           imagePullPolicy: Always
-          image: 'quay.io/erikerlandson/ray-ubi:py-3.6-ray-ea6bdfb9'
+          image: 'quay.io/erikerlandson/ray-ubi:py-3.8-ray-1.4.0'
           command: ["/bin/bash", "-c", "--"]
           args: ["trap : TERM INT; sleep infinity & wait;"]
           env:

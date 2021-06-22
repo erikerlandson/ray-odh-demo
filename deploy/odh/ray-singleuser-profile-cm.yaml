@@ -24,7 +24,7 @@ data:
           - name: ray-cluster-template
             path: rayDashboardRouteTemplate
           configuration:
-            ray_image: 'quay.io/erikerlandson/ray-ml-ubi:py-3.6-ray-ea6bdfb9'
+            ray_image: 'quay.io/erikerlandson/ray-ml-ubi:py-3.8-ray-1.4.0'
             # number of workers currently disabled due to bug in JH launcher
             #max_workers: 5
             memory_request: '1024Mi'
